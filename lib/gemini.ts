@@ -1,15 +1,14 @@
 /**
- * CLōD AI helper — Llama 3.1 8B via api.clod.io
+ * OpenRouter AI helper — poolside/laguna-xs.2:free
+ * Endpoint : https://openrouter.ai/api/v1/chat/completions
+ * Docs     : https://openrouter.ai/docs
  *
- * CLōD sits behind Cloudflare. Vercel's serverless IPs trigger the bot
- * challenge (403) when plain server headers are sent. Sending a realistic
- * browser User-Agent + Origin/Referer bypasses the challenge entirely.
- *
- * Retries up to MAX_RETRIES on 429 or network errors.
+ * OpenRouter is OpenAI-compatible. No Cloudflare issues from Vercel.
+ * Retries up to MAX_RETRIES on 429 / network errors.
  */
 
-const CLOD_ENDPOINT = "https://api.clod.io/v1/chat/completions";
-const MODEL = "Llama 3.1 8B";
+const OR_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
+const MODEL = "poolside/laguna-xs.2:free";
 const MAX_RETRIES = 3;
 
 function sleep(ms: number) {
@@ -22,12 +21,12 @@ function retryAfterMs(headers: Headers): number {
     const secs = parseFloat(val);
     if (!isNaN(secs)) return Math.min(secs * 1000, 60_000);
   }
-  return 12_000;
+  return 10_000;
 }
 
 export async function gemini(prompt: string, maxTokens = 1024): Promise<string> {
-  const apiKey = process.env.CLOD_API_KEY;
-  if (!apiKey) throw new Error("CLOD_API_KEY is not set");
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) throw new Error("OPENROUTER_API_KEY is not set");
 
   let lastError: Error | null = null;
 
@@ -35,18 +34,14 @@ export async function gemini(prompt: string, maxTokens = 1024): Promise<string> 
     let res: Response;
 
     try {
-      res = await fetch(CLOD_ENDPOINT, {
+      res = await fetch(OR_ENDPOINT, {
         method: "POST",
         headers: {
-          // ── Required for Cloudflare bypass ──────────────────────────────
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-          "Accept": "application/json, text/plain, */*",
-          "Accept-Language": "en-US,en;q=0.9",
-          "Origin": "https://app.clod.io",
-          "Referer": "https://app.clod.io/",
-          // ── Auth + content ───────────────────────────────────────────────
           "Content-Type": "application/json",
           "Authorization": `Bearer ${apiKey}`,
+          // OpenRouter recommends these for routing and analytics
+          "HTTP-Referer": "https://sturdyio.vercel.app",
+          "X-Title": "Sturdy AI",
         },
         body: JSON.stringify({
           model: MODEL,
@@ -59,7 +54,7 @@ export async function gemini(prompt: string, maxTokens = 1024): Promise<string> 
       });
     } catch (fetchErr) {
       lastError = fetchErr as Error;
-      console.warn(`[clod] network error attempt ${attempt}/${MAX_RETRIES}:`, (fetchErr as Error).message);
+      console.warn(`[openrouter] network error attempt ${attempt}/${MAX_RETRIES}:`, (fetchErr as Error).message);
       if (attempt < MAX_RETRIES) { await sleep(3_000 * attempt); continue; }
       break;
     }
@@ -74,19 +69,14 @@ export async function gemini(prompt: string, maxTokens = 1024): Promise<string> 
 
     if (res.status === 429) {
       const delay = retryAfterMs(res.headers);
-      console.warn(`[clod] 429 rate-limited attempt ${attempt}/${MAX_RETRIES}, waiting ${delay}ms`);
-      lastError = new Error(`CLōD rate limited`);
+      console.warn(`[openrouter] 429 rate-limited attempt ${attempt}/${MAX_RETRIES}, waiting ${delay}ms`);
+      lastError = new Error("OpenRouter rate limited — please try again shortly");
       if (attempt < MAX_RETRIES) { await sleep(delay); continue; }
       break;
     }
 
-    // 403 = Cloudflare still blocking (shouldn't happen with correct headers)
-    if (res.status === 403) {
-      throw new Error(`CLōD blocked by Cloudflare (403) — check request headers`);
-    }
-
-    throw new Error(`CLōD API error ${res.status}: ${body.slice(0, 200)}`);
+    throw new Error(`OpenRouter API error ${res.status}: ${body.slice(0, 300)}`);
   }
 
-  throw lastError ?? new Error("CLōD: all retries exhausted");
+  throw lastError ?? new Error("OpenRouter: all retries exhausted");
 }
