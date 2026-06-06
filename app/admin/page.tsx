@@ -341,8 +341,8 @@ export default function AdminPage() {
   const filteredRecent = (stats?.recent ?? [])
     .filter(r => !search || [r.page, r.browser, r.device, r.ref].some(v => v.toLowerCase().includes(search.toLowerCase())))
     .sort((a, b) => {
-      const va = sortCol === "time" ? new Date(a.time).getTime() : (a as Record<string, string>)[sortCol];
-      const vb = sortCol === "time" ? new Date(b.time).getTime() : (b as Record<string, string>)[sortCol];
+      const va = sortCol === "time" ? new Date(a.time).getTime() : (a as unknown as Record<string, string>)[sortCol];
+      const vb = sortCol === "time" ? new Date(b.time).getTime() : (b as unknown as Record<string, string>)[sortCol];
       return sortAsc ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
     });
 
