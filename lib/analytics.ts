@@ -7,7 +7,9 @@
 import fs from "fs";
 import path from "path";
 
-const FILE = path.join(process.cwd(), ".analytics.json");
+const FILE = process.env.VERCEL
+  ? "/tmp/.analytics.json"
+  : path.join(process.cwd(), ".analytics.json");
 
 export interface PageHit {
   page: string;
