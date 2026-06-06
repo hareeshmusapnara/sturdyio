@@ -1,26 +1,167 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ── Dark (default) ── */
+:root {
+  --bg:          #111111;
+  --bg-card:     #1c1c1c;
+  --bg-card2:    #262626;
+  --border:      rgba(255,255,255,0.12);
+  --border-md:   rgba(255,255,255,0.20);
+  --text-1:      #f4f4f5;
+  --text-2:      #b4b4bb;
+  --text-3:      #7f7f8a;
+  --score-color: #ffffff;
+  --track-color: rgba(255,255,255,0.15);
 }
+
+/* ── Light ── */
+.light {
+  --bg:          #ffffff;
+  --bg-card:     #f4f4f5;
+  --bg-card2:    #e4e4e7;
+  --border:      rgba(0,0,0,0.10);
+  --border-md:   rgba(0,0,0,0.18);
+  --text-1:      #09090b;
+  --text-2:      #3f3f46;
+  --text-3:      #71717a;
+  --score-color: #000000;
+  --track-color: rgba(0,0,0,0.15);
+}
+
+* { scrollbar-width: thin; scrollbar-color: #27272a transparent; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+.light * { scrollbar-color: #d4d4d8 transparent; }
+.light ::-webkit-scrollbar-thumb { background: #d4d4d8; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: var(--font-body), Inter, system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.65;
+  overflow-x: hidden;
+  transition: background 0.2s, color 0.2s;
 }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading), "Space Grotesk", sans-serif;
+  letter-spacing: -0.02em;
+}
+
+code, pre, kbd, .mono {
+  font-family: var(--font-mono), "IBM Plex Mono", monospace;
+}
+
+/* Feature card accent hover */
+.feature-card:hover {
+  box-shadow: 0 0 0 1px var(--accent, #7c3aed), 0 8px 32px rgba(0,0,0,0.18);
+}
+.light .feature-card:hover {
+  box-shadow: 0 0 0 1px var(--accent, #7c3aed), 0 8px 24px rgba(0,0,0,0.08);
+}
+
+.dashboard-content {
+  font-family: var(--font-mono), "IBM Plex Mono", monospace;
+}
+.dashboard-content h1,
+.dashboard-content h2,
+.dashboard-content h3,
+.dashboard-content h4,
+.dashboard-content h5,
+.dashboard-content h6 {
+  font-family: var(--font-mono), "IBM Plex Mono", monospace;
+  letter-spacing: -0.01em;
+}
+
+/* Cards */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 0;
+}
+.card2 {
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 18px;
+}
+
+/* Make sure all text inside cards is visible */
+.card, .card2 {
+  color: var(--text-1);
+}
+
+/* Header */
+.site-header {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Grad text — dark only, plain black in light */
+.grad-text {
+  background: linear-gradient(135deg, #a78bfa, #818cf8, #38bdf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.light .grad-text {
+  background: none;
+  -webkit-text-fill-color: var(--text-1);
+  color: var(--text-1);
+}
+
+/* Tab active indicator */
+.tab-active { position: relative; }
+.tab-active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0; right: 0;
+  height: 2px;
+  background: #7c3aed;
+  border-radius: 2px;
+}
+.light .tab-active::after { background: #000; }
+
+/* Primary button */
+.btn-primary {
+  background: #7c3aed;
+  color: #fff;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: opacity 0.15s;
+}
+.btn-primary:hover { opacity: 0.85; }
+.light .btn-primary { background: #000; color: #fff; }
+
+/* Pulse dot */
+.pulse-dot::before {
+  content: '';
+  display: inline-block;
+  width: 7px; height: 7px;
+  background: #10b981;
+  border-radius: 50%;
+  margin-right: 6px;
+  animation: pulse-g 2s ease-in-out infinite;
+}
+@keyframes pulse-g {
+  0%,100% { opacity:1; transform:scale(1); }
+  50% { opacity:0.4; transform:scale(0.75); }
+}
+
+/* Fade up */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(12px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.fade-up  { animation: fadeUp 0.4s ease forwards; }
+.fade-up-1 { animation-delay:0.05s; opacity:0; }
+.fade-up-2 { animation-delay:0.12s; opacity:0; }
+.fade-up-3 { animation-delay:0.20s; opacity:0; }
+.fade-up-4 { animation-delay:0.28s; opacity:0; }
