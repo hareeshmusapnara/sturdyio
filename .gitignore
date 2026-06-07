@@ -36,6 +36,9 @@ yarn-error.log*
 # analytics data (runtime file, not for version control)
 .analytics.json
 
+# drizzle generated migrations (regenerate from schema)
+drizzle/
+
 # vercel
 .vercel
 
