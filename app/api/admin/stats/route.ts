@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStats } from "@/lib/analytics";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   const auth = req.headers.get("authorization") || "";
   const secret = process.env.ADMIN_SECRET || "";
@@ -12,5 +14,5 @@ export async function GET(req: NextRequest) {
   const rangeDays = parseInt(req.nextUrl.searchParams.get("range") || "14", 10);
   const safeRange = [7, 14, 30, 90].includes(rangeDays) ? rangeDays : 14;
 
-  return NextResponse.json(getStats(safeRange));
+  return NextResponse.json(await getStats(safeRange));
 }

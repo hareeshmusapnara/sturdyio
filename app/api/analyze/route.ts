@@ -6,6 +6,8 @@ import { db } from "@/lib/db";
 import { analyses, users } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { parseResumeText } from "@/lib/parser";
+
+export const dynamic = "force-dynamic";
 import {
   scoreATS, scoreContent, scoreKeywords, scoreFormat,
   categorizeSkills, matchJobDescription, detectIndustry, detectExperienceLevel,

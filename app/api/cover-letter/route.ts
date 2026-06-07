@@ -5,6 +5,8 @@ import { gemini } from "@/lib/gemini";
 import { db } from "@/lib/db";
 import { coverLetters } from "@/lib/schema";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) {

@@ -352,10 +352,10 @@ export default function AdminPage() {
       : <ChevronDown size={10} style={{ opacity: 0.25 }} />
   );
 
-  const deviceSlices = stats ? [
-    { label: "Desktop", value: stats.devices.desktop, color: "#7c3aed" },
-    { label: "Mobile", value: stats.devices.mobile, color: "#3b82f6" },
-    { label: "Tablet", value: stats.devices.tablet, color: "#10b981" },
+  const deviceSlices = stats?.devices ? [
+    { label: "Desktop", value: stats.devices.desktop ?? 0, color: "#7c3aed" },
+    { label: "Mobile", value: stats.devices.mobile ?? 0, color: "#3b82f6" },
+    { label: "Tablet", value: stats.devices.tablet ?? 0, color: "#10b981" },
   ] : [];
 
   // Card style reuse

@@ -172,4 +172,4 @@ export async function getStats(rangeDays = 14) {
   };
 }
 
-export type StatsResult = ReturnType<typeof getStats>;
+export type StatsResult = Awaited<ReturnType<typeof getStats>>;
