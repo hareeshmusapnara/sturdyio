@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { gemini } from "@/lib/gemini";
+import { db } from "@/lib/db";
+import { analyses, users } from "@/lib/schema";
+import { eq } from "drizzle-orm";
 import { parseResumeText } from "@/lib/parser";
 import {
   scoreATS, scoreContent, scoreKeywords, scoreFormat,
@@ -127,6 +130,26 @@ INTERVIEW QUESTIONS:
       overallScore, skills, jobMatch, industry, experienceLevel,
       aiSuggestions, interviewQuestions,
     };
+
+    // ── Save to DB (fire-and-forget, never block the response) ────────────
+    const userId = (session.user as { id?: string })?.id;
+    if (userId) {
+      db.insert(analyses).values({
+        userId,
+        filename: "resume.txt",
+        overallScore,
+        atsScore: atsScore.score,
+        contentScore: contentScore.score,
+        keywordScore: keywordScore.score,
+        formatScore: formatScore.score,
+        industry: industry ?? null,
+        experienceLevel: experienceLevel ?? null,
+        parsedResume: parsed as unknown as Record<string, unknown>,
+        aiSuggestions: aiSuggestions as unknown as string[],
+        interviewQuestions: interviewQuestions as unknown as string[],
+        jobDescription: jobDescription ?? null,
+      }).catch(e => console.error("[analyze] DB insert error:", e));
+    }
 
     return NextResponse.json(result);
   } catch (err) {

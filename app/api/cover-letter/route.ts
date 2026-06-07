@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { gemini } from "@/lib/gemini";
+import { db } from "@/lib/db";
+import { coverLetters } from "@/lib/schema";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -41,6 +43,16 @@ ${resumeText.slice(0, 2000)}${jdSection}`;
 
     if (!coverLetter || coverLetter.length < 100) {
       return NextResponse.json({ error: "Failed to generate cover letter" }, { status: 500 });
+    }
+
+    // ── Save to DB ────────────────────────────────────────────────────────
+    const userId = (session.user as { id?: string })?.id;
+    if (userId) {
+      db.insert(coverLetters).values({
+        userId,
+        coverLetter,
+        jobDescription: jobDescription ?? null,
+      }).catch(e => console.error("[cover-letter] DB insert error:", e));
     }
 
     return NextResponse.json({ coverLetter });

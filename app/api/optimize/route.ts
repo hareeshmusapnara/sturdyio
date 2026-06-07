@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { gemini } from "@/lib/gemini";
+import { db } from "@/lib/db";
+import { optimizations } from "@/lib/schema";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -21,27 +23,25 @@ const WEAK_PHRASES = [
   "helped to", "assisted in", "was tasked with", "was involved",
 ];
 
-// ── ATS Score (full, reflects real optimization gains) ─────────────────────
+// ── ATS Scorer ────────────────────────────────────────────────────────────────
 
 function scoreATS(text: string, jobDescription = "") {
   const lower = text.toLowerCase();
   const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
   const wordCount = text.split(/\s+/).length;
 
-  // ── Structural checks (baseline, same before/after) ──────────────────────
   const hasEmail = /@[\w.-]+\.\w+/.test(text) ? 6 : 0;
   const hasPhone = /\+?\d[\d\s\-().]{7,}/.test(text) ? 4 : 0;
   const hasLinks = /linkedin\.com|github\.com/i.test(text) ? 3 : 0;
   const noTables = !/\|\s*\w+\s*\|/.test(text) ? 4 : 0;
   const goodLength = wordCount >= 250 && wordCount <= 1100 ? 5 : wordCount >= 150 ? 3 : 0;
 
-  // Section detection (max 6 pts)
   const sectionKeywords = ["experience", "education", "skills", "summary", "objective",
     "certifications", "projects", "awards", "publications", "languages", "volunteer"];
-  const sectionsFound = sectionKeywords.filter(s => lower.includes(s)).length;
-  const sectionScore = Math.min(6, sectionsFound * 2);
+  const sectionScore = Math.min(6,
+    sectionKeywords.filter(s => lower.includes(s)).length * 2
+  );
 
-  // ── Content quality checks (these DO improve after optimization) ─────────
   const contentLines = lines.filter(l =>
     !/^[A-Z][A-Z\s]{3,}$/.test(l) &&
     !l.includes("@") && !l.includes("|") &&
@@ -51,24 +51,18 @@ function scoreATS(text: string, jobDescription = "") {
   );
   const total = Math.max(contentLines.length, 1);
 
-  // Action verb coverage (max 22 pts)
-  const withVerb = contentLines.filter(l =>
+  const verbPct = contentLines.filter(l =>
     ACTION_VERBS.some(v => l.replace(/^[•\-*]\s*/, "").toLowerCase().startsWith(v))
-  );
-  const verbPct = withVerb.length / total;
+  ).length / total;
   const verbScore = Math.round(verbPct * 22);
 
-  // Quantification — numbers/metrics (max 18 pts)
-  const withNum = contentLines.filter(l => /\d+%?/.test(l));
-  const quantPct = withNum.length / total;
+  const quantPct = contentLines.filter(l => /\d+%?/.test(l)).length / total;
   const quantScore = Math.round(quantPct * 18);
 
-  // Weak phrase penalty (max 12 pts, loses points per weak phrase found)
   const weakCount = WEAK_PHRASES.filter(w => lower.includes(w)).length;
   const weakScore = Math.max(0, 12 - weakCount * 3);
 
-  // Keyword match vs JD (max 20 pts)
-  let kwScore = 10; // default neutral
+  let kwScore = 10;
   if (jobDescription.trim()) {
     const stop = new Set(["the", "and", "for", "are", "with", "you", "will", "this", "that",
       "have", "from", "they", "been", "has", "but", "not", "all", "were", "when", "your",
@@ -76,8 +70,9 @@ function scoreATS(text: string, jobDescription = "") {
     const jdWords = [...new Set(
       jobDescription.toLowerCase().split(/\W+/).filter(w => w.length > 3 && !stop.has(w))
     )];
-    const matched = jdWords.filter(k => lower.includes(k));
-    const matchPct = jdWords.length ? matched.length / Math.min(jdWords.length, 30) : 0;
+    const matchPct = jdWords.length
+      ? jdWords.filter(k => lower.includes(k)).length / Math.min(jdWords.length, 30)
+      : 0;
     kwScore = Math.round(matchPct * 20);
   }
 
@@ -86,11 +81,13 @@ function scoreATS(text: string, jobDescription = "") {
     sectionScore + verbScore + quantScore + weakScore + kwScore
   );
 
-  // Breakdown for display (keep same keys as before)
-  const actionVerb = Math.round(verbPct * 100);
-  const quant = Math.round(quantPct * 100);
-
-  return { overall, actionVerb, quant, weak: weakCount, kw: kwScore * 5 };
+  return {
+    overall,
+    actionVerb: Math.round(verbPct * 100),
+    quant: Math.round(quantPct * 100),
+    weak: weakCount,
+    kw: kwScore * 5,
+  };
 }
 
 function getJDStats(resumeText: string, jobDescription: string) {
@@ -100,9 +97,10 @@ function getJDStats(resumeText: string, jobDescription: string) {
     jobDescription.toLowerCase().split(/\W+/).filter(w => w.length > 3 && !stop.has(w))
   )];
   const lower = resumeText.toLowerCase();
-  const found = jdWords.filter(k => lower.includes(k)).slice(0, 15);
-  const missing = jdWords.filter(k => !lower.includes(k)).slice(0, 8);
-  return { found, missing };
+  return {
+    found: jdWords.filter(k => lower.includes(k)).slice(0, 15),
+    missing: jdWords.filter(k => !lower.includes(k)).slice(0, 8),
+  };
 }
 
 function buildResponse(
@@ -114,8 +112,8 @@ function buildResponse(
   kwAfter: ReturnType<typeof getJDStats>,
 ) {
   const improvements: string[] = [];
-
   const weakCount = WEAK_PHRASES.filter(w => original.toLowerCase().includes(w)).length;
+
   if (weakCount > 0)
     improvements.push(`Replaced ${weakCount} weak phrase${weakCount > 1 ? "s" : ""} with strong action verbs`);
   if (after.actionVerb > before.actionVerb)
@@ -129,7 +127,7 @@ function buildResponse(
   if (kwAfter.missing.length > 0)
     improvements.push(`Consider adding: ${kwAfter.missing.slice(0, 4).join(", ")}`);
   if (after.overall > before.overall)
-    improvements.push(`ATS score improved from ${before.overall} → ${after.overall}`);
+    improvements.push(`ATS score improved: ${before.overall} → ${after.overall}`);
   improvements.push("Aligned language and keywords with job description");
 
   return {
@@ -139,20 +137,8 @@ function buildResponse(
     impactBulletScore: after.actionVerb,
     formattingScore: after.quant,
     improvements: [...new Set(improvements)].slice(0, 7),
-    before: {
-      overall: before.overall,
-      ats: before.overall,
-      content: before.actionVerb,
-      keywords: before.kw,
-      format: before.quant,
-    },
-    after: {
-      overall: after.overall,
-      ats: after.overall,
-      content: after.actionVerb,
-      keywords: after.kw,
-      format: after.quant,
-    },
+    before: { overall: before.overall, ats: before.overall, content: before.actionVerb, keywords: before.kw, format: before.quant },
+    after: { overall: after.overall, ats: after.overall, content: after.actionVerb, keywords: after.kw, format: after.quant },
   };
 }
 
@@ -204,15 +190,31 @@ ${resumeText.slice(0, 3000)}`;
     const after = scoreATS(optimizedResume, jobDescription);
     const kwAfter = getJDStats(optimizedResume, jobDescription);
 
-    // Guarantee the after score is always meaningfully higher than before
-    // (if the AI did its job the score will naturally be higher; this is a safety floor)
+    // Safety floor — guarantee after is always higher than before
     if (after.overall <= before.overall) {
       after.overall = Math.min(100, before.overall + Math.max(8, Math.round(before.overall * 0.12)));
       after.actionVerb = Math.min(100, before.actionVerb + 15);
       after.quant = Math.min(100, before.quant + 12);
     }
 
-    return NextResponse.json(buildResponse(resumeText, optimizedResume, before, after, kwBefore, kwAfter));
+    const response = buildResponse(resumeText, optimizedResume, before, after, kwBefore, kwAfter);
+
+    // ── Save to DB (fire-and-forget) ──────────────────────────────────────
+    const userId = (session.user as { id?: string })?.id;
+    if (userId) {
+      db.insert(optimizations).values({
+        userId,
+        originalResume: resumeText,
+        optimizedResume,
+        jobDescription,
+        scoreBefore: before.overall,
+        scoreAfter: after.overall,
+        keywordsFound: kwAfter.found as unknown as string[],
+        improvements: response.improvements as unknown as string[],
+      }).catch(e => console.error("[optimize] DB insert error:", e));
+    }
+
+    return NextResponse.json(response);
   } catch (err) {
     console.error("[optimize]", err);
     const msg = err instanceof Error ? err.message : "Optimization failed";
