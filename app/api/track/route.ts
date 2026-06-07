@@ -35,8 +35,13 @@ export async function POST(req: NextRequest) {
     const ref = req.headers.get("referer") || undefined;
     const ua = req.headers.get("user-agent") || undefined;
 
-    // Skip bots
+    // Skip bots and admin pages
     if (ua && /bot|crawl|spider|slurp|lighthouse|headless|prerender/i.test(ua)) {
+      return NextResponse.json({ ok: true });
+    }
+
+    // Skip /admin routes entirely — never count admin activity
+    if ((page || "").startsWith("/admin")) {
       return NextResponse.json({ ok: true });
     }
 

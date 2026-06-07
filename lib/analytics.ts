@@ -5,7 +5,7 @@
 
 import { db } from "@/lib/db";
 import { pageHits } from "@/lib/schema";
-import { gte, sql } from "drizzle-orm";
+import { gte, sql, notLike } from "drizzle-orm";
 
 function deviceType(ua = ""): "mobile" | "tablet" | "desktop" {
   if (/tablet|ipad|playbook|silk/i.test(ua)) return "tablet";
@@ -29,25 +29,30 @@ export async function getStats(rangeDays = 14) {
   const dayStart = new Date(Date.now() - DAY);
   const weekStart = new Date(Date.now() - 7 * DAY);
 
-  // Fetch all hits in the selected range
+  // Fetch all hits in the selected range — exclude /admin pages
   const rangeHits = await db
     .select()
     .from(pageHits)
-    .where(gte(pageHits.ts, rangeStart));
+    .where(gte(pageHits.ts, rangeStart))
+    .then(rows => rows.filter(h => !h.page.startsWith("/admin")));
 
   // Today + week counts
   const todayHits = rangeHits.filter(h => h.ts >= dayStart);
   const weekHits = rangeHits.filter(h => h.ts >= weekStart);
 
-  // All-time totals
+  // All-time totals — exclude /admin pages
   const [totalRow] = await db
     .select({ count: sql<number>`COUNT(*)` })
-    .from(pageHits);
+    .from(pageHits)
+    .where(notLike(pageHits.page, "/admin%"));
+
   const totalVisits = Number(totalRow?.count ?? 0);
 
   const [uniqueRow] = await db
     .select({ count: sql<number>`COUNT(DISTINCT ip_hash)` })
-    .from(pageHits);
+    .from(pageHits)
+    .where(notLike(pageHits.page, "/admin%"));
+
   const uniqueVisitors = Number(uniqueRow?.count ?? 0);
 
   // Unique in range
