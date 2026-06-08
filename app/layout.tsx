@@ -23,6 +23,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Analytics />
         </AuthProvider>
         <Script
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7326754333700578"
+          strategy="afterInteractive"
+          crossOrigin="anonymous"
+        />
+        <Script
           src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"
           strategy="beforeInteractive"
         />
