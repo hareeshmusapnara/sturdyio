@@ -10,7 +10,7 @@ const inter = Inter({ variable: "--font-body", subsets: ["latin"] });
 const ibmPlexMono = IBM_Plex_Mono({ variable: "--font-mono", subsets: ["latin"], weight: ["100", "200", "300", "400", "500", "600", "700"] });
 
 export const metadata: Metadata = {
-  title: "Sturdy AI - Free ATS Score Checker & Resume Optimizer",
+  title: "Free ATS Score Checker & Resume Optimizer",
   description: "Sturdy AI - Free AI resume analyzer & optimizer. Check ATS score instantly. Get personalized tips to improve your resume and pass applicant tracking systems.",
 };
 
