@@ -18,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable} ${ibmPlexMono.variable} antialiased`}>
       <head>
+        <meta name="google-adsense-account" content="ca-pub-7326754333700578" />
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7326754333700578" crossOrigin="anonymous" />
       </head>
       <body style={{ margin: 0, padding: 0 }}>
