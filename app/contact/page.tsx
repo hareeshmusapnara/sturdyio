@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Mail, Instagram, Twitter, Linkedin } from "lucide-react";
+import { Mail, Instagram, Twitter } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Contact Sturdy AI",
@@ -42,10 +42,12 @@ export default function ContactPage() {
           <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Social Media</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {[
-              { icon: Instagram, label: "Instagram", handle: "@sturdyai", href: "https://instagram.com/sturdyai", color: "#e1306c" },
-              { icon: Twitter, label: "Twitter / X", handle: "@sturdyai", href: "https://twitter.com/sturdyai", color: "#1da1f2" },
-              { icon: Linkedin, label: "LinkedIn", handle: "Sturdy AI", href: "https://linkedin.com/company/sturdyai", color: "#0a66c2" },
-            ].map(({ icon: Icon, label, handle, href, color }) => (
+              { icon: Instagram, label: "Instagram", handle: "@sturdyai", href: "https://instagram.com/sturdyai", color: "#e1306c", svg: null },
+              { icon: Twitter, label: "Twitter / X", handle: "@sturdyai", href: "https://twitter.com/sturdyai", color: "#1da1f2", svg: null },
+              { icon: null, label: "LinkedIn", handle: "Sturdy AI", href: "https://linkedin.com/company/sturdyai", color: "#0a66c2", svg: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#0a66c2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+              ) },
+            ].map(({ icon: Icon, label, handle, href, color, svg }) => (
               <a
                 key={label}
                 href={href}
@@ -55,7 +57,7 @@ export default function ContactPage() {
               >
                 <div className="card" style={{ padding: 20, display: "flex", alignItems: "center", gap: 14, transition: "border-color 0.2s" }}>
                   <div style={{ width: 40, height: 40, borderRadius: 10, background: `${color}20`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Icon size={18} color={color} />
+                    {svg ?? <Icon size={18} color={color} />}
                   </div>
                   <div>
                     <p style={{ margin: 0, fontWeight: 600, color: "var(--text-1)", fontSize: 16 }}>{label}</p>
