@@ -41,16 +41,16 @@ export default function ContactPage() {
           <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Social Media</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {[
-              { icon: null, label: "Instagram", handle: "@sturdyai", href: "https://instagram.com/sturdyai", color: "#e1306c", svg: (
+              { label: "Instagram", handle: "@sturdyai", href: "https://instagram.com/sturdyai", color: "#e1306c", svg: (
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e1306c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
               ) },
-              { icon: null, label: "Twitter / X", handle: "@sturdyai", href: "https://twitter.com/sturdyai", color: "#1da1f2", svg: (
+              { label: "Twitter / X", handle: "@sturdyai", href: "https://twitter.com/sturdyai", color: "#1da1f2", svg: (
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="#1da1f2"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.259 5.631zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
               ) },
-              { icon: null, label: "LinkedIn", handle: "Sturdy AI", href: "https://linkedin.com/company/sturdyai", color: "#0a66c2", svg: (
+              { label: "LinkedIn", handle: "Sturdy AI", href: "https://linkedin.com/company/sturdyai", color: "#0a66c2", svg: (
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="#0a66c2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
               ) },
-            ].map(({ icon: Icon, label, handle, href, color, svg }) => (
+            ].map(({ label, handle, href, color, svg }) => (
               <a
                 key={label}
                 href={href}
@@ -60,7 +60,7 @@ export default function ContactPage() {
               >
                 <div className="card" style={{ padding: 20, display: "flex", alignItems: "center", gap: 14, transition: "border-color 0.2s" }}>
                   <div style={{ width: 40, height: 40, borderRadius: 10, background: `${color}20`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    {svg ?? <Icon size={18} color={color} />}
+                    {svg}
                   </div>
                   <div>
                     <p style={{ margin: 0, fontWeight: 600, color: "var(--text-1)", fontSize: 16 }}>{label}</p>
