@@ -534,16 +534,28 @@ export default function Home() {
             </div>
 
             {/* ── Footer ── */}
-            <footer className="border-t pt-6 pb-4" style={{ borderColor: "var(--border)" }}>
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs" style={{ color: "var(--text-3)" }}>
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded bg-violet-600 flex items-center justify-center">
-                    <Brain size={11} className="text-white" />
+            <footer className="border-t pt-8 pb-6" style={{ borderColor: "var(--border)" }}>
+              <div className="flex flex-col gap-5">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3" style={{ color: "var(--text-3)" }}>
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 rounded bg-violet-600 flex items-center justify-center">
+                      <Brain size={11} className="text-white" />
+                    </div>
+                    <span className="font-semibold text-sm" style={{ color: "var(--text-2)" }}>Sturdy AI</span>
+                    <span className="text-sm">— Resume Analyzer & Optimizer</span>
                   </div>
-                  <span className="font-semibold" style={{ color: "var(--text-2)" }}>Sturdy AI</span>
-                  <span>— Resume Analyzer & Optimizer</span>
+                  <span className="text-sm">Built with Next.js · by Harish · © {new Date().getFullYear()}</span>
                 </div>
-                <span>Built with Next.js · Gemini AI · NextAuth · © {new Date().getFullYear()}</span>
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-6">
+                  {[
+                    { href: "/about", label: "About" },
+                    { href: "/privacy", label: "Privacy Policy" },
+                    { href: "/terms", label: "Terms of Service" },
+                    { href: "/contact", label: "Contact" },
+                  ].map(({ href, label }) => (
+                    <Link key={href} href={href} className="text-sm font-medium hover:underline" style={{ color: "var(--text-2)" }}>{label}</Link>
+                  ))}
+                </div>
               </div>
             </footer>
           </div>

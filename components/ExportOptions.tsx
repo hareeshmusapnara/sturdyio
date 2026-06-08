@@ -351,18 +351,6 @@ export default function ExportOptions({ result, filename }: Props) {
   return (
     <div className="flex flex-wrap gap-2 items-center">
 
-      {/* ── Download Resume PDF (primary CTA) ── */}
-      <button
-        onClick={handleResumePDF}
-        disabled={resumeLoading}
-        className="btn-primary flex items-center gap-2 px-4 py-2 text-sm disabled:opacity-50"
-      >
-        {resumeLoading
-          ? <Loader2 size={13} className="animate-spin" />
-          : <Download size={13} />}
-        {resumeLoading ? "Generating…" : "Download Resume PDF"}
-      </button>
-
       {/* ── Export dropdown ── */}
       <div className="relative">
         <button

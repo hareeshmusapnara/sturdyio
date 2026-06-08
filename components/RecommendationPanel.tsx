@@ -36,8 +36,8 @@ export default function RecommendationPanel({ result, onOptimizeBullets }: Props
             <span className="font-semibold text-sm" style={{ color: "var(--text-1)", fontFamily: "var(--font-heading)" }}>
               AI-Powered Insights
             </span>
-            <span className="ml-auto text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(124,58,237,0.1)", color: "#7c3aed" }}>
-              Gemini AI
+            <span className="ml-auto text-xs px-2 py-0.5 rounded-full pulse-dot" style={{ background: "rgba(124,58,237,0.1)", color: "#7c3aed" }}>
+              Live
             </span>
           </div>
           <ul className="space-y-2.5">
